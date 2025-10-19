@@ -15,14 +15,14 @@ void dotEffectsTick() {
     }
   }
 
-  if (_dotState == true && _currentDotBrightness < MAX_DOT_BRIGHTNESS) {
-    if (_currentDotBrightness + DOT_BRIGHTNESS_STEP > MAX_DOT_BRIGHTNESS) {
-      _currentDotBrightness = MAX_DOT_BRIGHTNESS;
+  if (_dotState == true && _currentDotBrightness < _config.maxDotBrightness) {
+    if (_currentDotBrightness + DOT_BRIGHTNESS_STEP > _config.maxDotBrightness) {
+      _currentDotBrightness = _config.maxDotBrightness;
     } else {
       _currentDotBrightness += DOT_BRIGHTNESS_STEP;
     }
 
-    if (_currentDotBrightness == MAX_DOT_BRIGHTNESS) {
+    if (_currentDotBrightness == _config.maxDotBrightness) {
       _dotState = false;
     }
   }

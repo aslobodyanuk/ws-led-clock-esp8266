@@ -1,16 +1,3 @@
-
-#define SEGMENT_COUNT 7
-#define SEGMENT_SIZE 6
-
-#define TOTAL_NUMBERS_COUNT 4
-
-#define DOT_LED_COUNT 2
-
-#define DIGIT_TOTAL_LEDS SEGMENT_SIZE* SEGMENT_COUNT
-#define TOTAL_LED_COUNT DIGIT_TOTAL_LEDS* TOTAL_NUMBERS_COUNT + DOT_LED_COUNT
-
-uint32_t _ledStates[TOTAL_LED_COUNT];
-
 // ---------------- Segment Map ----------------
 // My setup
 //  --D--
@@ -56,25 +43,23 @@ void test(int value) {
 }
 
 void setDotValue() {
-  fillLedSegment(_dotLedsMapping[0], _dotLedsMapping[1], _pixels.Color(_currentDotBrightness, 0, 0));
+  // fillLedSegment(_dotLedsMapping[0], _dotLedsMapping[1], _pixels.Color(_currentDotBrightness, 0, 0));
+  fillLedSegment(_dotLedsMapping[0], _dotLedsMapping[1], CHSV(_config.hue, _config.saturation, _currentDotBrightness));
 }
 
 void initializeLedState() {
   for (int counter = 0; counter < TOTAL_LED_COUNT; counter++) {
-    _ledStates[counter] = _pixels.Color(0, 0, 0);
+    _ledStates[counter] = CRGB::Black;
   }
 }
 
 void updateLedHardwareState() {
-  _pixels.clear();
-  for (int i = 0; i < TOTAL_LED_COUNT; i++) {
-    _pixels.setPixelColor(i, _ledStates[i]);
-  }
-  _pixels.show();
+  FastLED.setBrightness(_config.hardwareBrightness);
+  FastLED.show();
 }
 
 void updateLedStateForDigit(int start, int end, byte value) {
-  fillLedSegment(start, end, _pixels.Color(0, 0, 0));
+  fillLedSegment(start, end, CRGB::Black);
 
   if (value > 9) return;  // only digits 0–9 supported
 
@@ -84,16 +69,30 @@ void updateLedStateForDigit(int start, int end, byte value) {
       int segStart = start + seg * SEGMENT_SIZE;
       int segEnd = segStart + SEGMENT_SIZE;
 
-      fillLedSegment(segStart, segEnd, _pixels.Color(MAX_DIGIT_BRIGHTNESS, 0, 0));
+      fillLedSegment(segStart, segEnd, getLedStripColour());
     }
   }
 }
 
+CHSV getLedStripColour() {
+  return CHSV(_config.hue, _config.saturation, _config.digitBrightness);
+}
+
 // Fill the LEDs for this segment with certain color
-void fillLedSegment(int start, int end, uint32_t value) {
+void fillLedSegment(int start, int end, CRGB::HTMLColorCode value) {
   for (int i = start; i < end; i++) {
     _ledStates[i] = value;
   }
+}
+
+void fillLedSegment(int start, int end, CHSV value) {
+  for (int i = start; i < end; i++) {
+    _ledStates[i] = value;
+  }
+}
+
+void forceLedStripUpdate() {
+  setDigitTime(_hrs, _mins);
 }
 
 void setDigitTime(byte hours, byte minutes) {
@@ -133,7 +132,7 @@ void setAllDigitsLoading() {
 }
 
 void setDigitLoading(int start, int end) {
-  fillLedSegment(start, end, _pixels.Color(0, 0, 0));
+  fillLedSegment(start, end, CRGB::Black);
 
   // For each of 7 segments
   for (int seg = 0; seg < SEGMENT_COUNT; seg++) {
@@ -141,7 +140,7 @@ void setDigitLoading(int start, int end) {
       int segStart = start + seg * SEGMENT_SIZE;
       int segEnd = segStart + SEGMENT_SIZE;
 
-      fillLedSegment(segStart, segEnd, _pixels.Color(MAX_DIGIT_BRIGHTNESS, 0, 0));
+      fillLedSegment(segStart, segEnd, getLedStripColour());
     }
   }
 }

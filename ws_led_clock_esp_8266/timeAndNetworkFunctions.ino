@@ -1,3 +1,8 @@
+void makeAccessPoint() {
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP("Digital Clock");
+}
+
 void connectWifi() {
   if (WiFi.status() == WL_CONNECTED) return;
   //Manual Wifi
@@ -16,8 +21,8 @@ void connectWifi() {
   }
   // drawProgress(100, "Connected to WiFi '" + String(WIFI_SSID.c_str()) + "'");
   Serial.println("connected.");
-  Serial.printf("Connected, IP address: %s/%s\n", WiFi.localIP().toString().c_str(), WiFi.subnetMask().toString().c_str()); //Get ip and subnet mask
-  Serial.printf("Connected, MAC address: %s\n", WiFi.macAddress().c_str());  //Get the local mac address
+  Serial.printf("Connected, IP address: %s/%s\n", WiFi.localIP().toString().c_str(), WiFi.subnetMask().toString().c_str());  //Get ip and subnet mask
+  Serial.printf("Connected, MAC address: %s\n", WiFi.macAddress().c_str());                                                  //Get the local mac address
 }
 
 void initTime() {
@@ -38,6 +43,6 @@ void initTime() {
   // drawProgress(100, "Time synchronized");
   Serial.println();
 
-  printf("Local time: %s", asctime(localtime(&now))); // print formated local time, same as ctime(&now)
-  printf("UTC time:   %s", asctime(gmtime(&now)));    // print formated GMT/UTC time
+  printf("Local time: %s", asctime(localtime(&now)));  // print formated local time, same as ctime(&now)
+  printf("UTC time:   %s", asctime(gmtime(&now)));     // print formated GMT/UTC time
 }
