@@ -140,7 +140,7 @@ void setDigitLoading(int start, int end) {
       int segStart = start + seg * SEGMENT_SIZE;
       int segEnd = segStart + SEGMENT_SIZE;
 
-      fillLedSegment(segStart, segEnd, getLedStripColour());
+      fillLedSegment(segStart, segEnd, CRGB::Red);
     }
   }
 }

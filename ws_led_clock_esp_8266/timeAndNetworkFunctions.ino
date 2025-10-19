@@ -35,7 +35,7 @@ void initTime() {
   while ((now = time(nullptr)) < NTP_MIN_VALID_EPOCH) {
     if (i > 80) i = 0;
     // drawProgress(i, "Updating time...");
-    // Serial.println("initTime: " + String(now));
+    Serial.println("initTime: " + String(now));
     delay(300);
     yield();
     i += 10;
