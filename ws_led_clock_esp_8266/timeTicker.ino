@@ -30,7 +30,7 @@ void timeTick() {
   }
 
   if (hasChanged) {
-    setDigitTime(_hrs, _mins);
+    setDigitTimeWithAnimation(_hrs, _mins);
   }
 }
 

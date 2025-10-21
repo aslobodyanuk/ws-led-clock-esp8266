@@ -4,28 +4,43 @@ void effectsTick() {
   }
 
   dotEffectsTick();
+  digitEffectsTick();
 }
 
 void dotEffectsTick() {
-  if (_dotState == false && _currentDotBrightness > 0) {
-    if (_currentDotBrightness - DOT_BRIGHTNESS_STEP < 0) {
-      _currentDotBrightness = 0;
-    } else {
-      _currentDotBrightness -= DOT_BRIGHTNESS_STEP;
-    }
+  int currentBrightness = _dotAnimationService.tick();
+
+  if (currentBrightness == _config.maxDotBrightness) {
+    handleDotAnimationComplete();
   }
 
-  if (_dotState == true && _currentDotBrightness < _config.maxDotBrightness) {
-    if (_currentDotBrightness + DOT_BRIGHTNESS_STEP > _config.maxDotBrightness) {
-      _currentDotBrightness = _config.maxDotBrightness;
-    } else {
-      _currentDotBrightness += DOT_BRIGHTNESS_STEP;
-    }
+  updateLedStateForDots();
+}
 
-    if (_currentDotBrightness == _config.maxDotBrightness) {
-      _dotState = false;
-    }
+void handleDotAnimationComplete() {
+  _dotAnimationService.setState(!_dotAnimationService.getState());
+}
+
+void digitEffectsTick() {
+  int currentBrightness = _digitAnimationService.tick();
+
+  if (currentBrightness == 0) {
+    handleDigitFadeOutComplete();
   }
 
-  setDotValue();
+  updateLedStateForAllDigits();
+}
+
+void handleDigitFadeOutComplete() {
+  _digits[0] = _newDigits[0];
+  _digits[1] = _newDigits[1];
+  _digits[2] = _newDigits[2];
+  _digits[3] = _newDigits[3];
+
+  _digitAnimationService.setState(true);
+}
+
+void updateAnimationServicesConfiguration() {
+  _digitAnimationService.setMaxValue(_config.digitBrightness);
+  _dotAnimationService.setMaxValue(_config.maxDotBrightness);
 }

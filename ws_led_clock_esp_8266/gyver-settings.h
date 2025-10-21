@@ -15,10 +15,12 @@ Config _config;
 FileData _configFileSystem(&LittleFS, "/config.dat", 'A', &_config, sizeof(_config));
 
 void forceLedStripUpdate();
+void updateAnimationServicesConfiguration();
 
 void apply() {
   Serial.println("Settings updated.");
   forceLedStripUpdate();
+  updateAnimationServicesConfiguration();
 }
 
 // ============ BUILDER ============
