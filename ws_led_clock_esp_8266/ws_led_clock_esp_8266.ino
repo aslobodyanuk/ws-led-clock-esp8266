@@ -11,6 +11,8 @@
 
 #include "gyver-settings.h"
 
+// esp8266 library v3.1.2
+
 //#define DEBUG_MODE 1                                              // Creates it`s own WIFI point and simulates time passing by, comment out to disable
 
 #define PIN 4
