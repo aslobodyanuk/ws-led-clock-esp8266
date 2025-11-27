@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>LED Simulator</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .variables {
+            color: white;
+            font-family: monospace;
+            margin: 20px;
+            text-align: left;
+        }
+
+        .controls {
+            color: white;
+            font-family: monospace;
+            margin: 20px;
+            text-align: left;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .slider-container label {
+            min-width: 200px;
+        }
+
+        input[type="range"] {
+            margin: 0 10px;
+        }
+
+        .slider-value {
+            min-width: 50px;
+        }
+
+        .led-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px;
+        }
+
+        .led {
+            width: 40px;
+            height: 40px;
+            background-color: red;
+            border-radius: 50%;
+        }
+
+        .led-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .led-label {
+            color: white;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .led-values {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="variables" id="variables"></div>
+    <div class="controls">
+        <div class="slider-container">
+            <label for="brightnessSlider">Brightness Max Value:</label>
+            <input type="range" id="brightnessSlider" min="50" max="255" value="255">
+            <span class="slider-value" id="brightnessValue">255</span>
+        </div>
+        <div class="slider-container">
+            <label for="durationSlider">Fade Duration (ms):</label>
+            <input type="range" id="durationSlider" min="100" max="2000" value="500">
+            <span class="slider-value" id="durationValue">500</span>
+        </div>
+        <div class="slider-container">
+            <label for="dotBrightnessSlider">Dot Brightness:</label>
+            <input type="range" id="dotBrightnessSlider" min="0" max="255" value="100">
+            <span class="slider-value" id="dotBrightnessValue">100</span>
+        </div>
+    </div>
+    <div class="led-container">
+        <div class="led-wrapper">
+            <div class="led" id="non-blinking-led"></div>
+            <div class="led-values">
+                <span class="led-label" id="non-blinking-label">0.00</span>
+                <span class="led-label" id="non-blinking-brightness">255</span>
+            </div>
+        </div>
+        <div class="led-wrapper">
+            <div class="led" id="blinking-led"></div>
+            <div class="led-values">
+                <span class="led-label" id="blinking-label">0.00</span>
+                <span class="led-label" id="blinking-brightness">0</span>
+            </div>
+        </div>
+        <div class="led-wrapper">
+            <div class="led" id="brightness-reference"></div>
+            <div class="led-values">
+                <span class="led-label" id="reference-label">0.00</span>
+                <span class="led-label" id="reference-brightness">100</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        const led = document.querySelector('#blinking-led');
+        const blinkingLabel = document.querySelector('#blinking-label');
+        const referenceLabel = document.querySelector('#reference-label');
+        const nonBlinkingLabel = document.querySelector('#non-blinking-label');
+
+        const blinkingBrightness = document.querySelector('#blinking-brightness');
+        const referenceBrightness = document.querySelector('#reference-brightness');
+        const nonBlinkingBrightness = document.querySelector('#non-blinking-brightness');
+
+        const DOT_BLINK_EVERY_MS = 2800;
+        const DOT_BRIGHTNESS_STEP = 1;
+
+        let DOT_BRIGHTNESS = 100;
+        let DOT_BRIGHTNESS_MAX_VALUE = 255;
+        let FADE_DURATION_MS = 850;
+        let EFFECTS_TIMER_MS = 10;
+
+        let brightness = DOT_BRIGHTNESS;
+        let isIncreasing = false;
+        let lastUpdate = 0;
+        let lastBlinkTime = 0;
+        let isAnimating = true;
+
+        // Update the displayVariables function
+        function displayVariables() {
+            const variables = {
+                DOT_BLINK_EVERY_MS,
+                EFFECTS_TIMER_MS,
+                FADE_DURATION_MS,
+                DOT_BRIGHTNESS_MAX_VALUE,
+                DOT_BRIGHTNESS_STEP,
+                DOT_BRIGHTNESS
+            };
+
+            const variablesDiv = document.getElementById('variables');
+            variablesDiv.innerHTML = Object.entries(variables)
+                .map(([key, value]) => `${key}: ${value.toFixed(2)}`)
+                .join('<br>');
+        }
+
+        // Call once at start
+
+
+        // Initialize non-blinking LED
+        function initializeNonBlinkingLed() {
+            const nonBlinkingLed = document.querySelector('#non-blinking-led');
+            const opacity = 1.0;
+            nonBlinkingLed.style.opacity = opacity;
+            nonBlinkingLabel.textContent = opacity.toFixed(2);
+            nonBlinkingBrightness.textContent = '255';
+        }
+
+        function animate(currentTime) {
+
+            if (!isAnimating && currentTime - lastBlinkTime >= DOT_BLINK_EVERY_MS) {
+                isAnimating = true;
+                lastBlinkTime = currentTime;
+            }
+
+            if (isAnimating && currentTime - lastUpdate >= EFFECTS_TIMER_MS) {
+                if (isIncreasing) {
+                    brightness += DOT_BRIGHTNESS_STEP;
+                    if (brightness >= DOT_BRIGHTNESS) {  
+                        brightness = DOT_BRIGHTNESS;     
+                        isIncreasing = false;
+                    }
+                } else {
+                    brightness -= DOT_BRIGHTNESS_STEP;
+                    if (brightness <= 0) {
+                        brightness = 0;
+                        isIncreasing = true;
+                        isAnimating = false;
+                    }
+                }
+
+                const opacity = brightness / 255;  // Simplified calculation
+                led.style.opacity = opacity;
+                blinkingLabel.textContent = opacity.toFixed(2);
+                blinkingBrightness.textContent = brightness.toFixed(0);
+                lastUpdate = currentTime;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start the animation
+        requestAnimationFrame(animate);
+
+        function recalculateEffectsTimer() {
+            EFFECTS_TIMER_MS = (FADE_DURATION_MS * DOT_BRIGHTNESS_STEP) / DOT_BRIGHTNESS;
+        }
+
+        // Add slider event listeners
+        document.getElementById('brightnessSlider').addEventListener('input', function (e) {
+            DOT_BRIGHTNESS_MAX_VALUE = parseInt(e.target.value);
+            document.getElementById('brightnessValue').textContent = DOT_BRIGHTNESS_MAX_VALUE;
+            recalculateEffectsTimer();
+            displayVariables();
+        });
+
+        document.getElementById('durationSlider').addEventListener('input', function (e) {
+            FADE_DURATION_MS = parseInt(e.target.value);
+            document.getElementById('durationValue').textContent = FADE_DURATION_MS;
+            recalculateEffectsTimer();
+            displayVariables();
+        });
+
+        document.getElementById('dotBrightnessSlider').addEventListener('input', function (e) {
+            DOT_BRIGHTNESS = parseInt(e.target.value);
+            document.getElementById('dotBrightnessValue').textContent = DOT_BRIGHTNESS;
+            updateBrightnessReference();
+            recalculateEffectsTimer();
+            displayVariables();
+        });
+
+        // Get reference to the brightness reference LED
+        const brightnessRefLed = document.querySelector('#brightness-reference');
+
+        // Update brightness reference LED when DOT_BRIGHTNESS changes
+        function updateBrightnessReference() {
+            const opacity = DOT_BRIGHTNESS / 255;
+            brightnessRefLed.style.opacity = opacity;
+            referenceLabel.textContent = opacity.toFixed(2);
+            referenceBrightness.textContent = DOT_BRIGHTNESS;
+        }
+
+        // Initial setup
+        recalculateEffectsTimer();
+        updateBrightnessReference();
+        initializeNonBlinkingLed();
+        displayVariables();
+
+        // Add this function after your existing variable declarations
+        function updateSliderValues() {
+            // Update Brightness Max Value slider
+            const brightnessSlider = document.getElementById('brightnessSlider');
+            const brightnessValue = document.getElementById('brightnessValue');
+            brightnessSlider.value = DOT_BRIGHTNESS_MAX_VALUE;
+            brightnessValue.textContent = DOT_BRIGHTNESS_MAX_VALUE;
+
+            // Update Fade Duration slider
+            const durationSlider = document.getElementById('durationSlider');
+            const durationValue = document.getElementById('durationValue');
+            durationSlider.value = FADE_DURATION_MS;
+            durationValue.textContent = FADE_DURATION_MS;
+
+            // Update Dot Brightness slider
+            const dotBrightnessSlider = document.getElementById('dotBrightnessSlider');
+            const dotBrightnessValue = document.getElementById('dotBrightnessValue');
+            dotBrightnessSlider.value = DOT_BRIGHTNESS;
+            dotBrightnessValue.textContent = DOT_BRIGHTNESS;
+        }
+
+        // Add this line after your initial variable declarations and before any other function calls
+        updateSliderValues();
+    </script>
+</body>
+
+</html>
